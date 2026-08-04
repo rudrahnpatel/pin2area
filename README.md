@@ -13,6 +13,30 @@ Built by **Rudra Patel**. Data sourced from official **India Post** records (112
 - **Iconography:** Lucide Icons
 - **Data & Search Engine:** Client-side scoring fuzzy search with MySQL relational schema mapping
 
+## Data Architecture & Pincode Fetching Pipeline
+
+### 1. Data Source & Structuring
+Pincode data is curated from official **India Post** records and structured in `client/src/data/pincodes.js`. Each entry contains:
+- `pincode`: 6-digit Bangalore postal code (e.g. `560092`).
+- `area`: Main locality name (e.g. `Sahakaranagar`).
+- `subAreas`: Array of mapped post offices and sub-localities (e.g. `Amrutahalli`, `Byatarayanapura`).
+- `lat` & `lng`: Geographical map coordinates for Leaflet rendering.
+
+### 2. Search & Fetching Scoring Algorithm (`searchPincodes`)
+When a user searches by pincode or locality name, `searchPincodes(query)` executes a zero-latency client-side scoring search algorithm:
+- **Exact Pincode Match:** Priority score `100`
+- **Exact Locality Match:** Priority score `95`
+- **Exact Sub-locality Match:** Priority score `90`
+- **Pincode Prefix Match (e.g. "5600"):** Priority score `80`
+- **Locality Prefix Match (e.g. "Kora"):** Priority score `75`
+- **Sub-locality Prefix Match:** Priority score `70`
+- **Substring Keyword Match:** Priority score `25 - 60`
+
+Matching records are filtered (`score > 0`), sorted descending by relevance, and capped to top 20 instant results.
+
+### 3. MySQL Database Synchronization Pipeline
+The `database/generate-seed.js` script converts `pincodes.js` into relational SQL statements, producing `database/seed.sql` for MySQL deployment with foreign key constraints and B-Tree indexing.
+
 ## Key Features
 
 - **Instant Search with Autocomplete Overlay:** Search by 6-digit pincodes (e.g. `560092`) or locality names (e.g. `Koramangala`, `Sahakaranagar`).
@@ -26,7 +50,6 @@ Built by **Rudra Patel**. Data sourced from official **India Post** records (112
 - **Top Appbar Saved Locations Dropdown:** Quick access menu next to theme toggle with counter badges, search-result style items, and fast bookmark removal.
 - **Interactive Squircle Map:** Dark mode Leaflet tile filtering, custom glowing markers, and location popups.
 - **Responsive 2-column & Mobile Layout:** 2-row button grid, left-right key-value pair metadata grids, and full-width dropdown menus.
-- **MySQL Relational Schema & Seed Dumps:** Includes `database/schema.sql` (Pincodes & Sub-localities foreign key relations with B-Tree indexes) and `database/seed.sql` for production MySQL deployments.
 - **Theme Support:** Dark, Light, and System theme switching.
 - **Issue Reporting:** Direct mailto integration for feedback (`patelrudrahn676@gmail.com`).
 
@@ -51,10 +74,14 @@ The application will launch locally at `http://localhost:5173`.
 
 ## Deployment (Vercel)
 
-1. Push the codebase to GitHub.
-2. Import project in Vercel dashboard.
-3. Set Root Directory to `client`.
-4. Vercel auto-detects Vite and builds the project.
+```bash
+git add .
+git commit -m "Deploy Pin2Area app"
+git push origin main
+```
+
+1. Import project in Vercel dashboard.
+2. Vercel auto-detects Vite and builds the project.
 
 ## Author & Data Attribution
 
