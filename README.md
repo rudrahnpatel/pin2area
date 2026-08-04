@@ -4,6 +4,8 @@ A modern, fast, and feature-rich web directory to explore Bangalore pincodes, po
 
 Built by **Rudra Patel**. Data sourced from official **India Post** records (112+ locations indexed).
 
+<image src="client/public/pin2area.png">
+
 ## Tech Stack
 
 - **Frontend Framework:** React 19 (Vite)
